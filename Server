@@ -1,0 +1,31 @@
+from flask import Flask, request, jsonify
+import json
+app = Flask(__name__)
+
+list_of_recent_words =[];
+languages = ["ENG", "SPA", "ARA"]
+
+@app.route('/', methods=['GET'])
+def greet():
+    return jsonify("Hello there: I am connected")
+
+@app.route('/languages', methods=['GET'])
+def available_languages():
+    return jsonify(languages)
+
+@app.route('/get_def', methods=['GET', 'POST'])
+def get_definition():
+    if request.method == 'GET':
+        return jsonify("def is obtained")
+    else:
+        recvd_msg = {'word' : request.json['word'], 'context': request.json['context'], 'language' : request.json['language']}
+        #We may wish to keep a list of recently searched words and/or contexts
+        list_of_recent_words.append(recvd_msg)
+        #This simple demo just capitalizes the recvd msg
+        definition = dict((key, value.upper()) for key, value in recvd_msg.items())
+        return jsonify(definition)
+
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=4321, debug=True)
