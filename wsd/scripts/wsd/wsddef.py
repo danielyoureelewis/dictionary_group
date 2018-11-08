@@ -94,12 +94,13 @@ def get_def(word, context, lang):
             lang = 'ar'
         #this should use the spa or arb word given 
         if len(indef['tuc']) > 0:
+            meaning = ""
             for tuc in indef['tuc']:
                 try:
                     if tuc['phrase']['text'] == word.lemma_:
                         esptemp = ""
                         for m in tuc['meanings']:
-                            if m['language'] == lang and len(m['text']) > len(esptemp):
+                            if m['language'] == lang and len(m['text']) > len(meaning):
                                 meaning = m['text']
                 except KeyError:
                     pass
