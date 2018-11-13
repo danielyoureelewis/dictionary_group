@@ -107,7 +107,7 @@ def get_def(word, context, lang):
     else:
         # needs to look for beginning of sentence
         if (word.pos_ == 'PROPN'):
-            print(word.text + " is a proper noun.")
+            meaning = word.text + " is a proper noun.")
         elif answer:
             meaning = answer.definition()
-    print(meaning)
+    return meaning
