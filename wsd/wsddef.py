@@ -7,7 +7,7 @@ from nltk.corpus import wordnet as wn
 from oxforddictionaries.words import OxfordDictionaries
 # load english dict
 nlp = spacy.load('en')
-#from espdict import espdict
+o = OxfordDictionaries("0008ceae","e3319ad80adb64e830100bf675efba59")
 
 def remove_notalpha(line):
     line = line.replace('\n', ' ')
@@ -66,14 +66,15 @@ def find_def(indef, lang, word):
     return meaning
 
 
-def get_def(word, context, lang):
-    #job = json.loads(injob.text)
-    #lang = injob['language']
-    #context = injob['context']
-    #word = injob['word']
-    #print("injob['language'] = " + lang)
-    #print("injob['context'] = " + context)
-    #print("injob['word'] = " + word)
+def get_def(injob):
+
+    lang = injob['language']
+    context = injob['context']
+    word = injob['word']
+
+    print(u"injob['language'] = " + lang)
+    print(u"injob['context'] = " + context)
+    print(u"injob['word'] = " + word)
     
     # make proper names into iso standard
     if lang == 'English':
@@ -86,8 +87,10 @@ def get_def(word, context, lang):
         lang = 'fra'
 
     # remove non alphanumeric chars
-    context = remove_notalpha(context)
+    #context = remove_notalpha(context)
+
     doc = nlp(context)
+
     if lang != 'eng':
         #call for translation to proper lang
         getstr = "https://glosbe.com/gapi/translate?from="+lang+"&dest=eng&format=json&phrase="+word+"&pretty=true"
@@ -96,6 +99,7 @@ def get_def(word, context, lang):
         word = find_token(indef, doc) 
     else:
         for token in doc: 
+            print(word + " " + token.text)
             if word == token.text:
                 word = token
                 break
@@ -104,10 +108,13 @@ def get_def(word, context, lang):
         if lang != 'eng':
             return find_def(indef, lang, word)
         else:
-            o = OxfordDictionaries("0008ceae","e3319ad80adb64e830100bf675efba59")
-            a = o.get_info_about_word(word.lemma_).json()
+            try:
+                a = o.get_info_about_word(word.lemma_).json()
+            except:
+                a = o.get_info_about_word(word.text).json()
             response = a['results'][0]['lexicalEntries'][0]['entries'][0]['senses'][0]['definitions'][0]
             return response
+
     if word:
         # do two seperate lesks 
         answer = simple_lesk(context, word.text, 
