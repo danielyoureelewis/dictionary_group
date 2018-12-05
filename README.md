@@ -24,10 +24,17 @@ To use the WSD module as a seperate python module, copy it into your projects di
 }
 
 Dependencies (everything but glosbe can bt pip installed - it is just an API call):
+
 pywsd: used for various implementations of the Lesk algorithm https://github.com/alvations/pywsd
+
 spacy: Used for stemming mostly. English, Spanish, and French language models are required. https://spacy.io/
+
 NLTK: Used to get definitions required also for pywsd. http://www.nltk.org/
+
 OxfordDictionary: Used for definitions of stopwords. https://developer.oxforddictionaries.com/
+
 flask: used for server. http://flask.pocoo.org/
+
 request: used for server. http://docs.python-requests.org/en/master/
+
 glosbe: Used for non-english definitions. https://glosbe.com/
