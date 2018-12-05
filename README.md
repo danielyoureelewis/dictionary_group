@@ -18,9 +18,13 @@ note: sometimes failures occur with Spanish and French due to words not being st
 To use the WSD module as a seperate python module, copy it into your projects directory and import it like normal. The function get_def() takes a JSON object in the following format.
 
 {
+
   "language":"eng" //spa for Spanish and fra for French
+
   "context":"A string of English words"
+  
   "word":"of" //the word needs to be in the string but can be in the source language
+
 }
 
 Dependencies (everything but glosbe can bt pip installed - it is just an API call):
