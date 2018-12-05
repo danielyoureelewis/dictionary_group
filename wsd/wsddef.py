@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
 import spacy
 import json
 import requests
@@ -6,17 +7,22 @@ from pywsd.lesk import simple_lesk, cosine_lesk
 from nltk.corpus import wordnet as wn
 from oxforddictionaries.words import OxfordDictionaries
 from nltk.stem.snowball import SnowballStemmer
+
+o = OxfordDictionaries("0008ceae","e3319ad80adb64e830100bf675efba59")
 # load english dict
 nlp = spacy.load('en')
-o = OxfordDictionaries("0008ceae","e3319ad80adb64e830100bf675efba59")
 slp = spacy.load('es')
+flp = spacy.load('fr')
 
+
+# removes non-alpha chars
 def remove_notalpha(line):
     line = line.replace('\n', ' ')
     result = ''.join([i for i in line if i.isalpha() or i == ' ' or i == '\n'])
     return result
 
 
+# parts of speech have different tags in wordnet and spacy
 def pos_convert(pos):
     pos_dict = {'NOUN': 'n', 'VERB': 'v', 'ADJ': 'a'}
     try:
@@ -25,6 +31,7 @@ def pos_convert(pos):
         return 'n'
 
 
+# compare the output of the two lesks and determine a winner
 def check_def(context, definition):
     definition = nlp(definition)
     pnt = 100/len(definition)
@@ -36,6 +43,8 @@ def check_def(context, definition):
     return score
 
 
+# find the token that matches the English word from a non-English language
+# this is very problematic. What if a word translates into a phrase?
 def find_token(indef, doc):
     for token in doc:
         print("find token token.text = " + token.lemma_)
@@ -47,7 +56,7 @@ def find_token(indef, doc):
             except:
                 continue
     
-
+# find the correct definition in the JSON returned by glosbe
 def find_def(indef, lang, word):
     #have to change from iso standard
     text = word.text
@@ -73,6 +82,7 @@ def find_def(indef, lang, word):
     return meaning
 
 
+# This is the main function which takes a JSON object and returns a definition
 def get_def(injob):
     lang = injob['language']
     context = injob['context'].lower()
@@ -80,7 +90,7 @@ def get_def(injob):
     
     #print(u"injob['language'] = " + lang)
     #print(u"injob['context'] = " + context)
-    print(u"injob['word'] = " + word)
+    #print(u"injob['word'] = " + word)
     
     # make proper names into iso standard
     if lang == 'English':
@@ -98,7 +108,10 @@ def get_def(injob):
     doc = nlp(context)
 
     if lang != 'eng':
-        stoken = slp(word)
+        if lang == 'fra':
+            stoken = flp(word)
+        if lang == 'spa':
+            stoken = slp(word)
         for token in stoken:
             print(token.lemma_)
             word = token.lemma_.lower()
@@ -118,7 +131,7 @@ def get_def(injob):
                 word = token
                 break
     
-    if word and word.is_stop or word.text == 'I': 
+    if word and (word.is_stop or word.text == 'I'): 
         if lang != 'eng':
             return find_def(indef, lang, word)
         else:
@@ -156,6 +169,7 @@ def get_def(injob):
             except Exception:
                 pass
 
+        # this is probably broken now the stemmer had problems with capitolization
         if (word.pos_ == 'PROPN'):
             meaning = word.text + " is a proper noun."
         elif lang != 'eng' and len(indef['tuc']) > 0: 
@@ -171,7 +185,11 @@ def get_def(injob):
             return "Sorry, I don't know that definintion:("
         elif lang == 'spa':
             return "Lo siento, no sé esa definición:("
+        elif lang == 'fra':
+            return "Désolé, je ne connais pas cette définition:("
     elif lang == 'eng':
         return "Sorry, I don't know that definintion:("
     elif lang == 'spa':
         return "Lo siento, no sé esa definición:("
+    elif lang == 'fra':
+        return "Désolé, je ne connais pas cette définition:("
