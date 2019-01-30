@@ -1,4 +1,4 @@
-# dictionary_group
+# WordWeaver
 backend of the multilinugal context aware dictionary 
 
 This repo includes the server scripts, testing scripts, test files, and word sense disambiguation scripts for the multilingual context aware dictionary. 
