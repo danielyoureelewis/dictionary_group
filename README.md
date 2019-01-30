@@ -19,7 +19,7 @@ To use the WSD module as a seperate python module, copy it into your projects di
 
 {
 
-  "language":"eng" //spa for Spanish and fra for French
+  "language":"English" //spa for Spanish and fra for French
 
   "context":"A string of English words"
   
