@@ -6,9 +6,8 @@ import requests
 from pywsd.lesk import simple_lesk, cosine_lesk
 from nltk.corpus import wordnet as wn
 from oxforddictionaries.words import OxfordDictionaries
-from nltk.stem.snowball import SnowballStemmer
 
-o = OxfordDictionaries("0008ceae","e3319ad80adb64e830100bf675efba59")
+o = OxfordDictionaries("0008ceae", "e3319ad80adb64e830100bf675efba59")
 # load english dict
 nlp = spacy.load('en')
 slp = spacy.load('es')
@@ -45,20 +44,33 @@ def check_def(context, definition):
 
 # find the token that matches the English word from a non-English language
 # this is very problematic. What if a word translates into a phrase?
-def find_token(indef, doc):
+def find_token(indef, doc, lang):
     for token in doc:
         print("find token token.text = " + token.lemma_)
         for item in indef['tuc']:
             try:
-                #print("from glosbe:" +item['phrase']['text'] + " from text :" + token.text)
+                print(item['phrase']['text'])
                 if item['phrase']['text'] == token.text:
                     return token
-            except:
+            except Exception:
                 continue
-    
+    # word was not found
+    if lang == 'spa':
+        lang = 'es'
+    if lang == 'eng':
+        lang = 'en'
+    if lang == 'fra':
+        lang = 'fr'
+    for item in indef['tuc']:
+        for meaning in item['meanings']:
+            if meaning['language'] == lang:
+                print(meaning['text'])
+                return meaning['text']
+
+
 # find the correct definition in the JSON returned by glosbe
 def find_def(indef, lang, word):
-    #have to change from iso standard
+    # have to change from iso standard
     text = word.text
     print("text is " + text)
     if lang == 'eng':
@@ -73,7 +85,6 @@ def find_def(indef, lang, word):
     for tuc in indef['tuc']:
         try:
             if tuc['phrase']['text'] == word.lemma_:
-                esptemp = ""
                 for m in tuc['meanings']:
                     if m['language'] == lang and len(m['text']) > len(meaning):
                         meaning = m['text']
@@ -87,11 +98,6 @@ def get_def(injob):
     lang = injob['language']
     context = injob['context'].lower()
     word = injob['word'].lower()
-    
-    #print(u"injob['language'] = " + lang)
-    #print(u"injob['context'] = " + context)
-    #print(u"injob['word'] = " + word)
-    
     # make proper names into iso standard
     if lang == 'English':
         lang = 'eng'
@@ -103,7 +109,6 @@ def get_def(injob):
         lang = 'fra'
 
     # remove non alphanumeric chars
-    #context = remove_notalpha(context)
 
     doc = nlp(context)
 
@@ -115,23 +120,19 @@ def get_def(injob):
         for token in stoken:
             print(token.lemma_)
             word = token.lemma_.lower()
-        print(word)
-        #call for translation to proper lang
-        getstr = "https://glosbe.com/gapi/translate?from="+lang+"&dest=eng&format=json&phrase="+word+"&pretty=true"
+        # call for translation to proper lang
+        getstr = "https://glosbe.com/gapi/translate?from="+ lang + "&dest=eng&format=json&phrase=" + word + "&pretty=true"
         response = requests.get(getstr)
-        print(response)
         indef = json.loads(response.text)
-        print(indef)
-        word = find_token(indef, doc)
-        print(type(word))
+        word = find_token(indef, doc, lang)
+        if isinstance(word, str):
+            return word
     else:
-        for token in doc: 
-            #print(word + " " + token.text)
+        for token in doc:
             if word == token.text:
                 word = token
                 break
-    
-    if word and (word.is_stop or word.text == 'I'): 
+    if word and (word.is_stop or word.text == 'I'):
         if lang != 'eng':
             return find_def(indef, lang, word)
         else:
@@ -140,17 +141,18 @@ def get_def(injob):
             else:
                 try:
                     a = o.get_info_about_word(word.lemma_).json()
-                except:
+                except Exception:
                     a = o.get_info_about_word(word.text).json()
-                response = a['results'][0]['lexicalEntries'][0]['entries'][0]['senses'][0]['definitions'][0]
+                response = a['results'][0]['lexicalEntries'][0][
+                    'entries'][0]['senses'][0]['definitions'][0]
             return response
 
     if word:
-        # do two seperate lesks 
-        answer = simple_lesk(context, word.text, 
-                            pos_convert(word.pos_))
-        cosans = cosine_lesk(context, word.text, 
-                            pos_convert(word.pos_))
+        # do two seperate lesks
+        answer = simple_lesk(context, word.text,
+                             pos_convert(word.pos_))
+        cosans = cosine_lesk(context, word.text,
+                             pos_convert(word.pos_))
 
         # find what we hope is the better answer
         if(check_def(context, cosans.definition()) >
@@ -169,11 +171,11 @@ def get_def(injob):
             except Exception:
                 pass
 
-        # this is probably broken now the stemmer had problems with capitolization
+        # probably broken now the stemmer had problems with capitolization
         if (word.pos_ == 'PROPN'):
             meaning = word.text + " is a proper noun."
-        elif lang != 'eng' and len(indef['tuc']) > 0: 
-            #this should use the spa or arb word given 
+        elif lang != 'eng' and len(indef['tuc']) > 0:
+            # this should use the spa or arb word given
             meaning = find_def(indef, lang, word)
         elif answer:
             meaning = answer.definition()

@@ -1,4 +1,4 @@
-# WordWeaver
+# dictionary_group
 backend of the multilinugal context aware dictionary 
 
 This repo includes the server scripts, testing scripts, test files, and word sense disambiguation scripts for the multilingual context aware dictionary. 
@@ -18,27 +18,16 @@ note: sometimes failures occur with Spanish and French due to words not being st
 To use the WSD module as a seperate python module, copy it into your projects directory and import it like normal. The function get_def() takes a JSON object in the following format.
 
 {
-
-  "language":"English" //spa for Spanish and fra for French
-
+  "language":"eng" //spa for Spanish and fra for French
   "context":"A string of English words"
-  
   "word":"of" //the word needs to be in the string but can be in the source language
-
 }
 
 Dependencies (everything but glosbe can bt pip installed - it is just an API call):
-
 pywsd: used for various implementations of the Lesk algorithm https://github.com/alvations/pywsd
-
 spacy: Used for stemming mostly. English, Spanish, and French language models are required. https://spacy.io/
-
 NLTK: Used to get definitions required also for pywsd. http://www.nltk.org/
-
 OxfordDictionary: Used for definitions of stopwords. https://developer.oxforddictionaries.com/
-
 flask: used for server. http://flask.pocoo.org/
-
 request: used for server. http://docs.python-requests.org/en/master/
-
 glosbe: Used for non-english definitions. https://glosbe.com/

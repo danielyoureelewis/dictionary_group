@@ -1,8 +1,10 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 from flask import Flask, request, jsonify
 import json
 from wsd import wsddef
 app = Flask(__name__)
-
+app.config['JSON_AS_ASCII'] = False 
 
 @app.route('/get_def', methods=['POST'])
 def get_definition():
